@@ -1,0 +1,71 @@
+<apex:page standardController="InternalEvent__c" extensions="InternalEventController" docType="html-5.0" standardStylesheets="false" showHeader="false">
+	<!--Include Stylsheets for the Mobile look and feel -->
+	<apex:stylesheet value="{!URLFOR($Resource.Mobile_Design_Templates,'/common/css/app.min.css')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.Mobile_Design_Templates,'/common/js/jQuery2.0.2.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.Mobile_Design_Templates,'/common/js/jquery.touchwipe.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.Mobile_Design_Templates,'/common/js/main.min.js')}"/>
+	<script type='text/javascript' src='/canvas/sdk/js/publisher.js'></script>
+      
+      <style>
+          .list-view-header, .data-capture-buttons a {
+                background: -webkit-linear-gradient(#2a93d5,#107abb);
+                background: linear-gradient(#2a93d5,#107abb);
+                box-shadow: 0 1px 3px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.21);
+                color: white;
+                font-weight: bold;
+          }
+          
+          #resultPage, #searchPage {
+              padding-bottom: 50px;
+          }
+      </style>
+      
+      <script type="text/javascript">
+         $(document).ready(function(){
+            $( ".checkboxes" ).change(function() {
+                //Enables the Share button on the publisher
+                Sfdc.canvas.publisher.publish({name: "publisher.setValidForSubmit", payload:"true"});
+            }); 
+         });
+
+      </script>
+      
+    <apex:form >
+        <div id="app-wrapper">
+            <div id="findExperts">
+                <h3>対象者に対して参加を促します</h3>
+                <section class="border-bottom">
+                     <div class="content">
+                          <div class="form-control-group">
+                               <div class="form-control form-control-select">
+                                   <apex:selectCheckboxes styleClass="checkboxes" value="{!attendees}">
+                                        <apex:selectOptions value="{!users}"/>
+                                    </apex:selectCheckboxes>
+                                </div>
+                          </div>
+                     </div>
+                </section>
+            </div> <!--#findExperts-->
+        </div><!--#app-wrapper-->
+    </apex:form>
+    
+    <script type='text/javascript'>  
+    
+        //送信ボタンが押された際に動作する
+        Sfdc.canvas.publisher.subscribe({name: "publisher.post", onData:function(e) {
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.InternalEventController.createTaskAndPost}',
+                function(result, event){
+                    if(event.status){
+                        //Closes the publisher and refreshes the page
+                        Sfdc.canvas.publisher.publish({name: "publisher.close", payload:{ refresh:"true"}});
+                    } else if (event.type === 'exception'){
+                        console.log(result);
+                    } else {
+                                        
+                    }
+                }
+            );
+        }}); 
+                                                  
+    </script>
+</apex:page>
